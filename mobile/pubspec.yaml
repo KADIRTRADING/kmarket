@@ -1,0 +1,68 @@
+name: tezkassa
+description: "TezKassa — O'zbekiston uchun do'kon boshqaruv tizimi (POS, ombor, moliya)."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.5.1
+
+  # Networking
+  dio: ^5.6.0
+
+  # Local persistence (offline cart queue, cached catalog) — R13.5
+  drift: ^2.20.1
+  sqlite3_flutter_libs: ^0.5.24
+  path_provider: ^2.1.4
+  path: ^1.9.0
+
+  # Secure token storage
+  flutter_secure_storage: ^9.2.2
+
+  # Barcode scanning via camera — R6.2
+  mobile_scanner: ^5.2.3
+
+  # Routing
+  go_router: ^14.2.7
+
+  # Formatting/i18n helpers
+  intl: ^0.19.0
+
+  # Receipt PDF share/print
+  printing: ^5.13.1
+  pdf: ^3.11.1
+  share_plus: ^10.0.2
+
+  # Charts for reports screens
+  fl_chart: ^0.69.0
+
+  # Connectivity awareness for offline handling — R13.4
+  connectivity_plus: ^6.0.5
+
+  # Icons/UI
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.13
+  drift_dev: ^2.20.1
+
+flutter:
+  uses-material-design: true
+  generate: true # enables flutter_gen for l10n
+
+  assets:
+    - assets/images/
+
+flutter_intl:
+  enabled: false

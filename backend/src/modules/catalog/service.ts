@@ -1,5 +1,5 @@
 import { pool, withTransaction } from "../../db/pool.js";
-import { NotFoundError, ValidationError } from "../../lib/errors.js";
+import { NotFoundError } from "../../lib/errors.js";
 
 export async function listCategories(storeId: string) {
   const { rows } = await pool.query(`SELECT * FROM categories WHERE store_id = $1 ORDER BY name`, [storeId]);

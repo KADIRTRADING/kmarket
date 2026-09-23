@@ -2,8 +2,9 @@ import ExcelJS from "exceljs";
 import { stringify } from "csv-stringify/sync";
 import PDFKit from "pdfkit";
 import { formatUzs } from "../../lib/money.js";
+import type { computeDashboardMetrics } from "./service.js";
 
-type DashboardMetrics = Awaited<ReturnType<typeof import("./service.js").computeDashboardMetrics>>;
+type DashboardMetrics = Awaited<ReturnType<typeof computeDashboardMetrics>>;
 
 const ROW_LABELS: Array<[keyof DashboardMetrics, string]> = [
   ["grossSales", "Yalpi savdo"],

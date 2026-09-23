@@ -168,6 +168,108 @@ export async function checkout(
   }
 }
 
+/**
+ * Creates a DRAFT sale (no stock movement yet, payment_status UNPAID) to anchor a
+ * Click payment. Click's flow is asynchronous — the customer may take minutes to pay
+ * on their own device — so we cannot apply stock/ledger effects until the backend
+ * verifies a successful Complete callback (R8.2, R8.4, R8.8). See
+ * modules/click/service.ts `finalizeClickPaidSale` for the completion half of this
+ * flow, and modules/sales/service.ts `checkout` for the synchronous cash/other flow.
+ */
+export async function createDraftSaleForClick(
+  storeId: string,
+  cashierId: string,
+  input: Omit<CheckoutInput, "payments">,
+): Promise<unknown> {
+  return withTransaction(async (client) => {
+    let subtotal = 0;
+    for (const item of input.items) {
+      const lineGross = multiplyMoneyByQuantity(item.unitPrice, item.quantity);
+      subtotal = addMoney(subtotal, subtractMoney(lineGross, item.discount));
+    }
+    const total = addMoney(subtractMoney(subtotal, input.discountTotal), input.taxTotal);
+
+    const saleNumberResult = await client.query<{ next_number: string }>(
+      `SELECT COALESCE(MAX(sale_number), 0) + 1 AS next_number FROM sales WHERE store_id = $1 FOR UPDATE`,
+      [storeId],
+    );
+    const saleNumber = Number(saleNumberResult.rows[0]!.next_number);
+
+    const { rows: saleRows } = await client.query(
+      `INSERT INTO sales (store_id, branch_id, cash_register_id, shift_id, cashier_id, customer_id, sale_number, status, payment_status, subtotal, discount_total, tax_total, total, notes)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'DRAFT', 'UNPAID', $8, $9, $10, $11, $12)
+       RETURNING *`,
+      [storeId, input.branchId, input.cashRegisterId ?? null, input.shiftId ?? null, cashierId, input.customerId ?? null, saleNumber, subtotal, input.discountTotal, input.taxTotal, total, input.notes ?? null],
+    );
+    const sale = saleRows[0];
+
+    for (const item of input.items) {
+      const variantResult = await client.query<{ running_avg_cost: number }>(
+        `SELECT running_avg_cost FROM product_variants WHERE id = $1 AND store_id = $2`,
+        [item.variantId, storeId],
+      );
+      const variant = variantResult.rows[0];
+      if (!variant) throw new NotFoundError(`Variant ${item.variantId} not found`);
+      const lineGross = multiplyMoneyByQuantity(item.unitPrice, item.quantity);
+      const lineTotal = subtractMoney(lineGross, item.discount);
+      await client.query(
+        `INSERT INTO sale_items (sale_id, variant_id, quantity, unit_price, unit_cost, discount, line_total)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [sale.id, item.variantId, item.quantity, item.unitPrice, variant.running_avg_cost, item.discount, lineTotal],
+      );
+    }
+
+    return sale;
+  });
+}
+
+/**
+ * Completes a DRAFT sale created for Click after the backend has verified a
+ * successful Complete callback (R8.4). Applies stock movements (now that payment is
+ * confirmed), records the CLICK sale_payment, posts the ledger entry, and marks the
+ * sale COMPLETED/PAID — mirroring the synchronous `checkout()` path but split across
+ * two calls because Click confirmation is asynchronous. Idempotent: if the sale is
+ * already COMPLETED, returns it unchanged rather than double-applying stock (defends
+ * against a duplicate Complete callback slipping past the click_transactions unique
+ * constraint check in some edge case).
+ */
+export async function finalizeClickPaidSale(
+  client: PoolClient,
+  storeId: string,
+  saleId: string,
+  clickAmount: number,
+): Promise<unknown> {
+  const { rows } = await client.query(`SELECT * FROM sales WHERE id = $1 AND store_id = $2 FOR UPDATE`, [saleId, storeId]);
+  const sale = rows[0];
+  if (!sale) throw new NotFoundError("Sale not found");
+  if (sale.status === "COMPLETED") return sale; // idempotent no-op on duplicate confirmation
+  if (sale.status !== "DRAFT") throw new ConflictError(`Cannot finalize sale in status ${sale.status}`, "SALE_NOT_DRAFT");
+
+  const items = await client.query(`SELECT * FROM sale_items WHERE sale_id = $1`, [saleId]);
+  for (const item of items.rows) {
+    await recordStockMovement(
+      storeId, sale.branch_id, item.variant_id, "SALE", -Number(item.quantity), item.unit_cost, sale.cashier_id,
+      { referenceType: "sale", referenceId: saleId }, client,
+    );
+  }
+
+  await client.query(`INSERT INTO sale_payments (sale_id, method, amount) VALUES ($1, 'CLICK', $2)`, [saleId, clickAmount]);
+  await postLedgerEntry(client, {
+    storeId, branchId: sale.branch_id, entryType: "SALE_REVENUE", amount: clickAmount,
+    paymentMethod: "CLICK", sourceType: "sale", sourceId: saleId,
+  });
+
+  if (sale.customer_id) {
+    await accrueLoyaltyPoints(client, storeId, sale.customer_id, saleId, sale.total);
+  }
+
+  const { rows: updated } = await client.query(
+    `UPDATE sales SET status = 'COMPLETED', payment_status = 'PAID', completed_at = now() WHERE id = $1 RETURNING *`,
+    [saleId],
+  );
+  return updated[0];
+}
+
 export async function getSale(storeId: string, saleId: string) {
   const { rows } = await pool.query(`SELECT * FROM sales WHERE id = $1 AND store_id = $2`, [saleId, storeId]);
   const sale = rows[0];

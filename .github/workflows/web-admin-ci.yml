@@ -1,0 +1,40 @@
+name: Web Admin CI
+
+on:
+  push:
+    branches: [main, "feature/**"]
+    paths:
+      - "web-admin/**"
+      - ".github/workflows/web-admin-ci.yml"
+  pull_request:
+    paths:
+      - "web-admin/**"
+      - ".github/workflows/web-admin-ci.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web-admin
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Build
+        env:
+          NEXT_PUBLIC_API_BASE_URL: http://localhost:4000
+        run: npm run build

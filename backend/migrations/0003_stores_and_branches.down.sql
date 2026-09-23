@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS cash_registers;
+DROP TABLE IF EXISTS warehouses;
+DROP TABLE IF EXISTS branches;
+DROP TABLE IF EXISTS store_documents;
+DROP TABLE IF EXISTS stores;

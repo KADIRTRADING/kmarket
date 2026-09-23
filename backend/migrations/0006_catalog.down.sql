@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS stock_levels;
+DROP TABLE IF EXISTS product_variants;
+DROP TABLE IF EXISTS products;
+DROP TABLE IF EXISTS brands;
+DROP TABLE IF EXISTS categories;

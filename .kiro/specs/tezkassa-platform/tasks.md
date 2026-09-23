@@ -29,7 +29,8 @@ completion can be checked against acceptance criteria, not just "code exists."
   - 2.8 Notification tables (`notifications`,`telegram_configs`) — R12.1–R12.2
   - 2.9 Generic `audit_log`, `platform_audit_log` — R3.3–R3.6, R10.2
   - 2.10 Indexes for tenant scoping + date-range + FK joins — R13.2
-  - _All as reviewable SQL files under `backend/migrations/`, run by `node-pg-migrate`._
+  - _All as reviewable SQL files under `backend/migrations/`, run by the custom
+        runner in `backend/src/db/migrate.ts`._
 
 - [ ] 3. Backend foundation
   - 3.1 Fastify app scaffold, config/env loader with schema validation, structured

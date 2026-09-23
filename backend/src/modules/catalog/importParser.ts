@@ -51,7 +51,12 @@ export function parseCsvImport(buffer: Buffer): ImportRow[] {
 
 export async function parseXlsxImport(buffer: Buffer): Promise<ImportRow[]> {
   const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(new Uint8Array(buffer));
+  // Cast needed because @types/node's Buffer generic signature and exceljs's
+  // bundled type definition for `load()` disagree on the exact Buffer/ArrayBuffer
+  // generic parameter; both refer to the same runtime Node Buffer at execution time,
+  // so this cast is safe. See https://github.com/exceljs/exceljs/issues (typings).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await workbook.xlsx.load(buffer as any);
   const sheet = workbook.worksheets[0];
   if (!sheet) return [];
 

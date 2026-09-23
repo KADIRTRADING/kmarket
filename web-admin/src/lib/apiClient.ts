@@ -88,6 +88,11 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}, retry = 
   return response.json() as Promise<T>;
 }
 
+/** Typed SWR fetcher: `useSWR<T>(key, fetcher)`. */
+export function fetcher<T>(url: string): Promise<T> {
+  return apiFetch<T>(url, { method: "GET" });
+}
+
 export const api = {
   get: <T>(path: string) => apiFetch<T>(path, { method: "GET" }),
   post: <T>(path: string, body?: unknown) => apiFetch<T>(path, { method: "POST", body: body ? JSON.stringify(body) : undefined }),

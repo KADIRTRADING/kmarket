@@ -2,7 +2,7 @@
 
 import useSWR from "swr";
 import { useParams } from "next/navigation";
-import { api } from "@/lib/apiClient";
+import { fetcher } from "@/lib/apiClient";
 
 interface StoreDetail {
   store: { id: string; name: string; status: string; address: string; contact_phone: string; business_details: string | null };
@@ -18,7 +18,7 @@ interface StoreDetail {
  */
 export default function StoreDetailPage() {
   const params = useParams<{ storeId: string }>();
-  const { data, isLoading, error } = useSWR<StoreDetail>(`/platform/stores/${params.storeId}`, (url) => api.get(url));
+  const { data, isLoading, error } = useSWR<StoreDetail>(`/platform/stores/${params.storeId}`, fetcher);
 
   if (isLoading) return <p>Yuklanmoqda...</p>;
   if (error || !data) return <p style={{ color: "var(--color-danger)" }}>Yuklashda xatolik.</p>;

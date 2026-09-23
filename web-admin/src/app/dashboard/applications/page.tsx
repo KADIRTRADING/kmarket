@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import useSWR from "swr";
-import { api, ApiError } from "@/lib/apiClient";
+import { api, ApiError, fetcher } from "@/lib/apiClient";
 
 interface StoreListItem {
   id: string;
@@ -19,7 +19,7 @@ interface StoreListItem {
  * submitted information, then approve or reject with a recorded reason (R3.3, R3.4).
  */
 export default function ApplicationsPage() {
-  const { data, error, isLoading, mutate } = useSWR<{ items: StoreListItem[] }>("/platform/stores?status=PENDING", (url) => api.get(url));
+  const { data, error, isLoading, mutate } = useSWR<{ items: StoreListItem[] }>("/platform/stores?status=PENDING", fetcher);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");

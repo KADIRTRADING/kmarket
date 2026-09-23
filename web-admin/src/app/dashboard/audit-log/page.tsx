@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { api } from "@/lib/apiClient";
+import { fetcher } from "@/lib/apiClient";
 
 interface AuditLogEntry {
   id: string;
@@ -17,7 +17,7 @@ interface AuditLogEntry {
  * action, with actor and timestamp, satisfying "Record who approved, rejected, or
  * suspended a store and when." */
 export default function AuditLogPage() {
-  const { data, isLoading, error } = useSWR<AuditLogEntry[]>("/platform/audit-log", (url) => api.get(url));
+  const { data, isLoading, error } = useSWR<AuditLogEntry[]>("/platform/audit-log", fetcher);
 
   return (
     <div>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 import Link from "next/link";
-import { api, ApiError } from "@/lib/apiClient";
+import { api, ApiError, fetcher } from "@/lib/apiClient";
 
 interface StoreListItem {
   id: string;
@@ -19,7 +19,7 @@ const STATUS_FILTERS = ["ALL", "PENDING", "ACTIVE", "REJECTED", "SUSPENDED"] as 
 export default function StoresPage() {
   const [status, setStatus] = useState<typeof STATUS_FILTERS[number]>("ALL");
   const query = status === "ALL" ? "" : `?status=${status}`;
-  const { data, error, isLoading, mutate } = useSWR<{ items: StoreListItem[] }>(`/platform/stores${query}`, (url) => api.get(url));
+  const { data, error, isLoading, mutate } = useSWR<{ items: StoreListItem[] }>(`/platform/stores${query}`, fetcher);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [suspendingId, setSuspendingId] = useState<string | null>(null);
   const [reason, setReason] = useState("");

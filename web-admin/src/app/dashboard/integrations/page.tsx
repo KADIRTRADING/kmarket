@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { api } from "@/lib/apiClient";
+import { fetcher } from "@/lib/apiClient";
 
 interface StoreListItem {
   id: string;
@@ -18,7 +18,7 @@ interface StoreListItem {
  * detail through the platform panel.
  */
 export default function IntegrationsPage() {
-  const { data, isLoading, error } = useSWR<{ items: StoreListItem[] }>("/platform/stores?status=ACTIVE", (url) => api.get(url));
+  const { data, isLoading, error } = useSWR<{ items: StoreListItem[] }>("/platform/stores?status=ACTIVE", fetcher);
 
   return (
     <div>

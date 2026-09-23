@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { api } from "@/lib/apiClient";
+import { fetcher } from "@/lib/apiClient";
 
 interface PlatformStats {
   storesByStatus: Record<string, number>;
@@ -15,7 +15,7 @@ function formatUzs(amount: number): string {
 }
 
 export default function DashboardHomePage() {
-  const { data, error, isLoading } = useSWR<PlatformStats>("/platform/stats", (url) => api.get(url));
+  const { data, error, isLoading } = useSWR<PlatformStats>("/platform/stats", fetcher);
 
   return (
     <div>

@@ -51,7 +51,7 @@ export function parseCsvImport(buffer: Buffer): ImportRow[] {
 
 export async function parseXlsxImport(buffer: Buffer): Promise<ImportRow[]> {
   const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(buffer);
+  await workbook.xlsx.load(new Uint8Array(buffer));
   const sheet = workbook.worksheets[0];
   if (!sheet) return [];
 

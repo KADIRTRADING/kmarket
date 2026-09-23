@@ -11,6 +11,6 @@ process.env.DATABASE_URL ??= "postgres://tezkassa:tezkassa@localhost:5432/tezkas
 process.env.JWT_ACCESS_SECRET ??= "test-access-secret-please-change-0123456789abcdef";
 process.env.JWT_REFRESH_SECRET ??= "test-refresh-secret-please-change-0123456789abcdef";
 process.env.CLICK_MODE ??= "mock";
-process.env.CLICK_CREDENTIALS_KEK ??= "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcd";
+process.env.CLICK_CREDENTIALS_KEK ??= "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 process.env.TELEGRAM_ENABLED ??= "false";
 process.env.LOG_LEVEL ??= "silent";

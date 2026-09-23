@@ -35,6 +35,7 @@ dependencies:
 
   # Formatting/i18n helpers
   intl: ^0.19.0
+  uuid: ^4.5.1
 
   # Receipt PDF share/print
   printing: ^5.13.1

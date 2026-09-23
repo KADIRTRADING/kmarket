@@ -34,7 +34,7 @@ services:
       JWT_ACCESS_SECRET: dev-only-access-secret-do-not-use-in-production-0123456789
       JWT_REFRESH_SECRET: dev-only-refresh-secret-do-not-use-in-production-0123456789
       CLICK_MODE: mock
-      CLICK_CREDENTIALS_KEK: 00112233445566778899aabbccddeeff00112233445566778899aabbccddee
+      CLICK_CREDENTIALS_KEK: 00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff
       CORS_ORIGIN: http://localhost:3000
     ports:
       - "4000:4000"

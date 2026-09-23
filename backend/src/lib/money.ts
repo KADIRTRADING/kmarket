@@ -72,7 +72,14 @@ export function applyPercentageDiscount(amountUzs: number, percent: number): num
 export function formatUzs(amountUzs: number, locale: "uz" | "ru" = "uz"): string {
   assertMoney(amountUzs, { allowNegative: true });
   const abs = Math.abs(amountUzs);
-  const grouped = abs.toLocaleString("ru-RU").replace(/,/g, " ");
+  // Group digits with a plain ASCII space every 3 digits. Deliberately not using
+  // `toLocaleString` here: locale-aware grouping (e.g. "ru-RU") inserts a Unicode
+  // non-breaking space (U+00A0), which looks identical to a normal space in most UIs
+  // but is a different character — surprising for exact-string comparisons/tests and
+  // for any downstream text processing. Plain regex grouping keeps the output
+  // byte-for-byte predictable across Node versions/ICU data.
+  const digits = String(abs);
+  const grouped = digits.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
   const sign = amountUzs < 0 ? "-" : "";
   const suffix = locale === "ru" ? "сум" : "so'm";
   return `${sign}${grouped} ${suffix}`;
